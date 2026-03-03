@@ -720,47 +720,57 @@ function scrollToCat(catName) {
         }
  let globalLocationLink = ""; 
 
-// --- FUNCTION 1: Location nikalne ke liye ---
+// --- 1. LOCATION FUNCTION (Fix with Alerts) ---
 function getLocation() {
     const status = document.getElementById('locationStatus');
     status.style.display = "block";
     status.innerText = "⏳ Finding your location...";
 
-    // Test Alert: Taaki pata chale button kaam kar raha hai
-    alert("Bhai, location dhoondhna shuru! Ab pop-up aaye toh 'Allow' kar dena.");
-
     if (!navigator.geolocation) {
         alert("Bhai, tere phone mein location support nahi hai!");
+        status.innerText = "❌ Not Supported";
         return;
     }
 
-    navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        // Google Maps Link Format
-        globalLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
-        status.innerText = "✅ Location Captured!";
-        alert("Location mil gayi! Ab order bhej sakte ho.");
-    }, (err) => {
-        alert("Bhai, tune permission BLOCK ki hai. Lock (🔒) icon pe jaake Allow karo!");
-        status.innerText = "❌ Location Failed";
-    }, { enableHighAccuracy: true, timeout: 10000 });
+    // Navigator call - Isse hi browser permission maangega
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Standard Maps Link Format (Fix)
+            globalLocationLink = "https://www.google.com/maps?q=" + lat + "," + lon;
+            
+            status.innerText = "✅ Location Captured!";
+            alert("Mubarak ho! Location mil gayi. Ab order bhej do.");
+        }, 
+        (err) => {
+            console.error(err);
+            if(err.code === 1) {
+                alert("Bhai, tune permission BLOCK kar rakhi hai. Site ke Lock (🔒) icon par click karke ALLOW karo!");
+            } else {
+                alert("GPS ya Signal ki dikkat hai. Ek baar refresh karke try karo.");
+            }
+            status.innerText = "❌ Location Failed";
+        }, 
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
+    );
 }
 
-// --- FUNCTION 2: Order bhejne ke liye ---
+// --- 2. ORDER FUNCTION (WhatsApp Fix) ---
 function confirmAndSendOrder() {
     let name = document.getElementById('custName').value.trim();
     let address = document.getElementById('custAddress').value.trim();
     let payMode = document.getElementById('paymentMethod').value;
 
     if (name === "" || address === "") {
-        alert("Bhai, Details toh bhar do! 🛵");
+        alert("Bhai, Naam aur Pata toh bhar do! 🛵");
         return;
     }
 
     let message = "*DRIP & DOUGH - NEW ORDER*\n";
     message += "--------------------------\n";
-    message += "Name: " + name + "\n";
+    message += "Customer: " + name + "\n";
     message += "Address: " + address + "\n";
     
     if(globalLocationLink !== "") {
@@ -769,7 +779,7 @@ function confirmAndSendOrder() {
     
     message += "Payment: " + payMode + "\n";
     message += "--------------------------\n\n";
-    message += "*ITEMS:*\n";
+    message += "*ITEMS ORDERED:*\n";
 
     let total = 0;
     for (let id in cart) {
@@ -779,12 +789,13 @@ function confirmAndSendOrder() {
 
     message += "\n*TOTAL: Rs." + total + "*\n";
     message += "--------------------------\n";
-    message += "Thank you!";
+    message += "Thank you for ordering!";
 
-    window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
+    window.open("https://wa.me/918076889662?text=" + encodeURIComponent(message), '_blank');
+    closeModal('checkoutModal');
 }
 
-// --- YE LINE ZAROORI HAI ---
+// --- MENU WAPAS LAANE KE LIYE ---
 window.onload = function() { renderMenu(); };
         
         
