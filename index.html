@@ -414,7 +414,15 @@ header p.tagline {
     <div class="floating-menu-item" onclick="scrollToCat('SHAKE')">🥤 Shakes</div>
     <div class="floating-menu-item" onclick="scrollToCat('COMBO')">🔥 Combos</div>
 </div>
-
+    <div id="optionsModal" class="modal">
+        <div class="modal-content">
+            <h3 id="optionsTitle">Select Option</h3>
+            <div id="optionsList" style="text-align: left;"></div>
+            <button class="confirm-btn" onclick="confirmOptions()" style="margin-top:15px; background:#d35400;">Add to Cart</button>
+            <button onclick="closeModal('optionsModal')" style="background:none; border:none; color:red; margin-top:10px; width:100%; font-weight:bold;">Cancel</button>
+        </div>
+    </div>
+        
 <script>
 function toggleMenu() {
     document.getElementById('floatMenu').classList.toggle('show');
@@ -706,6 +714,54 @@ function closeModal(id) {
     if(modal) modal.style.display = 'none'; 
 }
 // ---------------------------------
+// --- VARIANT / OPTIONS LOGIC ---
+let currentOptionItem = null;
+
+function openOptions(id, name, variantsStr) {
+    currentOptionItem = { id: id, name: name };
+    document.getElementById('optionsTitle').innerText = name + " - Choose Option";
+    
+    let variants = variantsStr.split(',');
+    let html = '';
+    variants.forEach((v, index) => {
+        html += `<label style="display:block; padding:12px; border:1px solid #ccc; margin-bottom:8px; border-radius:8px; font-weight:bold;">
+                    <input type="radio" name="itemVariant" value="${v}" ${index === 0 ? 'checked' : ''} style="width:auto; margin-right:10px;"> ${v}
+                 </label>`;
+    });
+    document.getElementById('optionsList').innerHTML = html;
+    document.getElementById('optionsModal').style.display = 'block';
+}
+
+function confirmOptions() {
+    let selectedOption = document.querySelector('input[name="itemVariant"]:checked');
+    if (!selectedOption) return;
+    
+    let variantName = selectedOption.value;
+    let originalId = currentOptionItem.id;
+    
+    let item = null;
+    for (const category in menuData) {
+        let found = menuData[category].find(i => i.id === originalId);
+        if (found) { item = found; break; }
+    }
+    if (!item) return;
+
+    let cartId = originalId + "_" + variantName.replace(/[^a-zA-Z0-9]/g, '');
+    
+    if (!cart[cartId]) {
+        cart[cartId] = { 
+            id: cartId,
+            name: item.name + " (" + variantName + ")", 
+            price: item.price, 
+            qty: 0 
+        };
+    }
+    cart[cartId].qty += 1;
+    
+    closeModal('optionsModal');
+    renderMenu();
+    showCheckoutButton();
+}
         
         
 function confirmAndSendOrder() {
