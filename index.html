@@ -801,8 +801,29 @@ function confirmAndSendOrder() {
     }
     message += "\nSubtotal: Rs." + orderTotal + "\nDelivery Charge: Rs." + deliveryCharge + "\n*TOTAL BILL: Rs." + finalTotal + "*\n--------------------------";
 
-    window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
-    closeModal('checkoutModal');
+            const whatsappUrl = `https://wa.me/918076889662?text=${encodeURIComponent(message)}`;
+
+        if (payMode === 'UPI') {
+            // TERI UPI ID KE SAATH DEEP LINK
+            let upiLink = `upi://pay?pa=8076889662@pthdfc&pn=Drip%20And%20Dough&am=${finalTotal}&cu=INR&tn=Order%20at%20Drip%20And%20Dough`;
+
+            alert("Proceeding to UPI Payment 💸! Payment ke baad automatically WhatsApp par order send ho jayega.");
+            
+            // 1. Pehle UPI App kholo
+            window.location.href = upiLink;
+
+            // 2. 3 second baad WhatsApp aur Modal close
+            setTimeout(function() {
+                window.open(whatsappUrl, '_blank');
+                closeModal('checkoutModal');
+            }, 3000);
+
+        } else {
+            // Agar Cash select kiya hai toh seedha WhatsApp
+            window.open(whatsappUrl, '_blank');
+            closeModal('checkoutModal');
+        }
+    
 }
 
 function checkStoreStatus() {
