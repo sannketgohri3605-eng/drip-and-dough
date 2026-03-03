@@ -472,6 +472,7 @@ function scrollToCat(catName) {
             <input type="text" id="custName" class="input-field" placeholder="Your Full Name">
             <textarea id="custAddress" class="input-field" rows="3" placeholder="Complete Delivery Address & Landmark"></textarea>
             
+            
             <button class="variant-btn" onclick="confirmAndSendOrder()">Send Order</button>
             <button class="variant-btn close-modal" onclick="closeModal('checkoutModal')">Back to Menu</button>
         </div>
@@ -484,7 +485,14 @@ function scrollToCat(catName) {
 
     <script>
         const menuData = {
-            "PIZZA": [
+            "PIZZA": [<div style="margin-top: 10px; text-align: left;">
+    <label style="font-weight: bold; color: #333; font-size: 0.9em;">💳 Payment Mode:</label>
+    <select id="paymentMethod" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit;">
+        <option value="Cash on Delivery">💵 Cash on Delivery (COD)</option>
+        <option value="UPI / Online">📱 UPI / Online Payment</option>
+    </select>
+</div>
+        
                 { id: "p1", name: "Single Topping Pizza", price: 129, desc: "Classic base with 1 choice of veggie topping", imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=150&q=80", variants: ["Onion", "Tomato", "Capsicum", "Corn"] },
                 { id: "p2", name: "Mix Veg", price: 179, desc: "Loaded with colorful fresh vegetables", imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=150&q=80" },
                 { id: "p3", name: "Margherita", price: 199, desc: "Authentic pizza with basil and cheese", imageUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=150&q=80" },
