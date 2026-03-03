@@ -727,9 +727,10 @@ function scrollToCat(catName) {
     localStorage.setItem('dd_customer_name', name);
     localStorage.setItem('dd_customer_address', address);
 
+    // --- PRO BILL WITH STANDARD EMOJIS ---
     let message = "🛍️ *DRIP & DOUGH - NEW ORDER!*\n";
     message += "--------------------------\n";
-    message += "👤 *Customer:* " + name + "\n";
+    message += "👤 *Name:* " + name + "\n";
     message += "📍 *Address:* " + address + "\n";
     message += "💳 *Payment:* " + payMode + "\n";
     message += "--------------------------\n\n";
@@ -751,18 +752,12 @@ function scrollToCat(catName) {
     }
     message += "✨ _Thank you for ordering!_";
 
+    // Tera number aur encoded message
     const whatsappUrl = `https://wa.me/918076889662?text=${encodeURIComponent(message)}`;
     
-    if(payMode === "UPI / Online") {
-        alert("Bhai, order ke baad WhatsApp par hum apna QR bhej denge! 👍");
-    }
-
     window.open(whatsappUrl, '_blank');
     closeModal('checkoutModal');
-}
-
-// Ye line zaroori hai menu wapas laane ke liye
-window.onload = renderMenu;
+        }
         
         
     </script>
