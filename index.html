@@ -598,193 +598,8 @@ function scrollToCat(catName) {
 
         let cart = {}; 
 
-        function renderMenu() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = ''; 
-            const isOpen = checkStoreStatus(); // Pehle timing check karega
-            
-
-            for (const category in menuData) {
-                const title = document.createElement('h2');
-                title.className = 'category-title';
-                title.innerText = category;
-                container.appendChild(title);
-
-                const grid = document.createElement('div');
-                grid.className = 'menu-grid';
-
-                menuData[category].forEach(item => {
-                                const priceText = item.displayPrice ? item.displayPrice : `Rs. ${item.price}`;
-            const div = document.createElement('div');
-            div.className = 'menu-item';
-
-            let descHTML = item.desc ? `<p class="item-desc">${item.desc}</p>` : '';
-            let actionHTML = '';
-
-            // Check dukan status
-            const isOpen = checkStoreStatus(); 
-
-            if (isOpen) {
-                // Agar dukan khuli hai toh buttons dikhao
-                if (item.variants) {
-                    let varStr = item.variants.join(',');
-                    actionHTML = `<button class="add-btn" onclick="openOptions('${item.id}', '${item.name}', '${varStr}')">Add +</button>`;
-                } else {
-                    if (cart[item.id] && cart[item.id].qty > 0) {
-                        actionHTML = `<div class="qty-control">
-                            <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
-                            <span class="qty-val">${cart[item.id].qty}</span>
-                            <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
-                        </div>`;
-                    } else {
-                        actionHTML = `<button class="add-btn" onclick="updateQty('${item.id}', 1)">Add +</button>`;
-                    }
-                }
-            } else {
-                // Agar band hai toh Grey "Closed" button
-                actionHTML = `<button disabled style="background: #ccc; color: #666; cursor: not-allowed; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold;">Closed</button>`;
-            }
-
-            div.innerHTML = `
-                <img src="${item.imageUrl}" class="item-img" alt="${item.name}">
-                <div class="item-content">
-                    <div class="item-info">
-                        <h3>${item.name}</h3>
-                        ${descHTML}
-                        <p class="price">${priceText}</p>
-                    </div>
-                    <div id="action-${item.id}">${actionHTML}</div>
-                </div>
-            `;
-            grid.appendChild(div);
-                    
-            }
-        }
-
-        let currentVariantItem = null;
-
-        function openOptions(id, name, price, priceText, variantsStr) {
-            currentVariantItem = { id, name, price, priceText };
-            const variants = variantsStr.split(',');
-            
-            // Update modal title contextually
-            const titleEl = document.getElementById('variant-title');
-            if (name.includes('Pizza')) titleEl.innerText = "Select Your Topping";
-            else if (name.includes('Drink')) titleEl.innerText = "Select Your Drink";
-            else titleEl.innerText = "Select Option";
-
-            const modalOptions = document.getElementById('modal-options');
-            modalOptions.innerHTML = '';
-            
-            variants.forEach(v => {
-                const btn = document.createElement('button');
-                btn.className = 'variant-btn';
-                btn.innerText = v;
-                btn.onclick = () => selectVariant(v);
-                modalOptions.appendChild(btn);
-            });
-            
-            document.getElementById('variantModal').style.display = 'flex';
-        }
-
-        function selectVariant(variantName) {
-            const variantId = currentVariantItem.id + "-" + variantName;
-            const finalName = `${currentVariantItem.name} (${variantName})`;
-            updateQty(variantId, finalName, currentVariantItem.price, currentVariantItem.priceText, 1);
-            closeModal('variantModal');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function updateQty(id, name, price, priceText, change) {
-            if (!cart[id]) {
-                cart[id] = { name, price, priceText, qty: 0 };
-            }
-            cart[id].qty += change;
-            if (cart[id].qty <= 0) delete cart[id]; 
-            
-            renderMenu(); 
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const cartBar = document.getElementById('cart-bar');
-            const cartInfo = document.getElementById('cart-info');
-            
-            let totalItems = 0;
-            let totalAmount = 0;
-
-            for (let id in cart) {
-                totalItems += cart[id].qty;
-                totalAmount += (cart[id].price * cart[id].qty);
-            }
-            
-            if (totalItems > 0) {
-                cartBar.style.display = 'flex';
-                cartInfo.innerText = `${totalItems} Item(s) | ₹${totalAmount}`;
-            } else {
-                cartBar.style.display = 'none';
-            }
-        }
-
-        function openCheckout() {
-            document.getElementById('checkoutModal').style.display = 'flex';
-            
-            if(localStorage.getItem('dd_customer_name')) {
-                document.getElementById('custName').value = localStorage.getItem('dd_customer_name');
-            }
-            if(localStorage.getItem('dd_customer_address')) {
-                document.getElementById('custAddress').value = localStorage.getItem('dd_customer_address');
-            }
-        }
- let globalLocationLink = ""; 
-
-// --- 1. LOCATION FUNCTION (Fix with Alerts) ---
-function getLocation() {
-    const status = document.getElementById('locationStatus');
-    status.style.display = "block";
-    status.innerText = "⏳ Finding your location...";
-
-    if (!navigator.geolocation) {
-        alert("Bhai, tere phone mein location support nahi hai!");
-        status.innerText = "❌ Not Supported";
-        return;
-    }
-
-    // Navigator call - Isse hi browser permission maangega
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            
-            // Standard Maps Link Format (Fix)
-            globalLocationLink = "https://www.google.com/maps?q=" + lat + "," + lon;
-            
-            status.innerText = "✅ Location Captured!";
-            alert("Mubarak ho! Location mil gayi. Ab order bhej do.");
-        }, 
-        (err) => {
-            console.error(err);
-            if(err.code === 1) {
-                alert("Bhai, tune permission BLOCK kar rakhi hai. Site ke Lock (🔒) icon par click karke ALLOW karo!");
-            } else {
-                alert("GPS ya Signal ki dikkat hai. Ek baar refresh karke try karo.");
-            }
-            status.innerText = "❌ Location Failed";
-        }, 
-        { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
-    );
-}
-// --- 1. UPI LOGIC (Line 767 ke paas chipkao) ---
-function updateUPILink() {
-    let total = 0;
-    for (let id in cart) { total += (cart[id].price * cart[id].qty); }
-    const myUpiId = "8076889662@pthdfc"; 
-    const bizName = "Drip and Dough";
-    const deepLink = `upi://pay?pa=${myUpiId}&pn=${encodeURIComponent(bizName)}&am=${total}&cu=INR&tn=Order_at_DripAndDough`;
-function renderMenu() {
+        
+          function renderMenu() {
     const container = document.getElementById('menu-container');
     if (!container) return;
     container.innerHTML = '';
@@ -792,13 +607,11 @@ function renderMenu() {
     const isOpen = checkStoreStatus(); // Status check karega
 
     for (const category in menuData) {
-        // Category Title
         const title = document.createElement('h2');
         title.className = 'category-title';
         title.innerText = category;
         container.appendChild(title);
 
-        // Menu Grid
         const grid = document.createElement('div');
         grid.className = 'menu-grid';
 
@@ -861,7 +674,7 @@ function confirmAndSendOrder() {
     let orderTotal = 0;
     for (let id in cart) { orderTotal += (cart[id].price * cart[id].qty); }
 
-    // Delivery Charge: >3km YA order <500 par 10rs/km
+    // Delivery Charge Logic: >3km YA order <500 par 10rs/km
     let deliveryCharge = (distance > 3 || orderTotal < 500) ? (distance * 10) : 0;
     let finalTotal = orderTotal + deliveryCharge;
 
@@ -879,7 +692,7 @@ function confirmAndSendOrder() {
 
 function checkStoreStatus() {
     const hour = new Date().getHours();
-    const isOpen = (hour >= 17 || hour < 1); // 5 PM se 1 AM
+    const isOpen = (hour >= 17 || hour < 1); // 5 PM to 1 AM
     const banner = document.getElementById('storeStatusBanner');
     const statusText = document.getElementById('openCloseStatus');
 
@@ -896,8 +709,7 @@ function checkStoreStatus() {
 }
 
 window.onload = function() { renderMenu(); };
-    
-
+  
 </script>
 </body>
 </html>
