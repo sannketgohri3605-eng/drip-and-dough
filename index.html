@@ -784,124 +784,119 @@ function updateUPILink() {
     const myUpiId = "8076889662@pthdfc"; 
     const bizName = "Drip and Dough";
     const deepLink = `upi://pay?pa=${myUpiId}&pn=${encodeURIComponent(bizName)}&am=${total}&cu=INR&tn=Order_at_DripAndDough`;
-    document.getElementById('upiDeepLink').setAttribute('href', deepLink);
+function renderMenu() {
+    const container = document.getElementById('menu-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const isOpen = checkStoreStatus(); // Status check karega
+
+    for (const category in menuData) {
+        // Category Title
+        const title = document.createElement('h2');
+        title.className = 'category-title';
+        title.innerText = category;
+        container.appendChild(title);
+
+        // Menu Grid
+        const grid = document.createElement('div');
+        grid.className = 'menu-grid';
+
+        menuData[category].forEach((item) => {
+            const priceText = item.displayPrice ? item.displayPrice : `Rs. ${item.price}`;
+            const div = document.createElement('div');
+            div.className = 'menu-item';
+
+            let descHTML = item.desc ? `<p class="item-desc">${item.desc}</p>` : '';
+            let actionHTML = '';
+
+            if (isOpen) {
+                if (item.variants) {
+                    let varStr = item.variants.join(',');
+                    actionHTML = `<button class="add-btn" onclick="openOptions('${item.id}', '${item.name}', '${varStr}')">Add +</button>`;
+                } else {
+                    if (cart[item.id] && cart[item.id].qty > 0) {
+                        actionHTML = `<div class="qty-control">
+                            <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                            <span class="qty-val">${cart[item.id].qty}</span>
+                            <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                        </div>`;
+                    } else {
+                        actionHTML = `<button class="add-btn" onclick="updateQty('${item.id}', 1)">Add +</button>`;
+                    }
+                }
+            } else {
+                actionHTML = `<button disabled style="background: #ccc; color: #666; cursor: not-allowed; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold;">Closed</button>`;
+            }
+
+            div.innerHTML = `
+                <img src="${item.imageUrl}" class="item-img" alt="${item.name}">
+                <div class="item-content">
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        ${descHTML}
+                        <p class="price">${priceText}</p>
+                    </div>
+                    <div id="action-${item.id}">${actionHTML}</div>
+                </div>
+            `;
+            grid.appendChild(div);
+        });
+        container.appendChild(grid);
+    }
 }
 
-document.getElementById('paymentMethod').addEventListener('change', function() {
-    const upiBox = document.getElementById('upiPaymentBox');
-    if (this.value === "UPI / Online") {
-        upiBox.style.display = "block";
-        updateUPILink();
-    } else {
-        upiBox.style.display = "none";
-    }
-});
-
-// --- 2. ORDER FUNCTION (WhatsApp Fix) ---
 function confirmAndSendOrder() {
-    let name = document.getElementById('custName').value.trim();
-    let address = document.getElementById('custAddress').value.trim();
-    let payMode = document.getElementById('paymentMethod').value;
+    const name = document.getElementById('custName').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+    const payMode = document.getElementById('paymentMethod').value;
+    const distEl = document.getElementById('custDistance');
+    const distance = distEl ? parseFloat(distEl.value) || 0 : 0;
 
     if (name === "" || address === "") {
         alert("Bhai, Naam aur Pata toh bhar do! 🛵");
         return;
     }
 
-    let message = "*DRIP & DOUGH - NEW ORDER*\n";
-    message += "--------------------------\n";
-    message += "Customer: " + name + "\n";
-    message += "Address: " + address + "\n";
-    message += "Payment: " + payMode + "\n";
-
-    // --- YE RAHI SCREENSHOT WALI WARNING ---
-    if(payMode === "UPI / Online") {
-        message += "⚠️ *PLEASE SEND PAYMENT SCREENSHOT HERE!*\n";
-    }
-    
-    if(typeof globalLocationLink !== 'undefined' && globalLocationLink !== "") {
-        message += "Maps Link: " + globalLocationLink + "\n";
-    }
-    
-    message += "--------------------------\n\n";
-    message += "*ITEMS ORDERED:*\n";
-
-        // --- 1. SUBTOTAL CALCULATE KARO ---
     let orderTotal = 0;
-    for (let id in cart) {
-        orderTotal += (cart[id].price * cart[id].qty);
-    }
+    for (let id in cart) { orderTotal += (cart[id].price * cart[id].qty); }
 
-    // --- 2. DELIVERY CHARGE LOGIC (10rs/km) ---
-    let distance = parseFloat(document.getElementById('custDistance').value) || 0;
-    let deliveryCharge = 0;
-
-    // Condition: Agar distance 3km se zyada hai YA order 500 se kam hai
-    if (distance > 3 || orderTotal < 500) {
-        deliveryCharge = distance * 10; 
-    }
-
+    // Delivery Charge: >3km YA order <500 par 10rs/km
+    let deliveryCharge = (distance > 3 || orderTotal < 500) ? (distance * 10) : 0;
     let finalTotal = orderTotal + deliveryCharge;
 
-    // --- 3. WHATSAPP MESSAGE FORMATTING ---
     let message = "*DRIP & DOUGH - NEW ORDER*\n--------------------------\n";
     message += "Customer: " + name + "\nAddress: " + address + "\nDistance: " + distance + " km\n";
-    message += "Payment: " + payMode + "\n";
-    message += "⏳ Delivery: 30-45 Mins\n";
-
-    if(payMode === "UPI / Online") { message += "⚠️ *PLEASE SEND PAYMENT SCREENSHOT!* \n"; }
-    if(typeof globalLocationLink !== 'undefined' && globalLocationLink !== "") { message += "Maps: " + globalLocationLink + "\n"; }
-
-    message += "--------------------------\n*ITEMS:*\n";
+    message += "Payment: " + payMode + "\n--------------------------\n*ITEMS:*\n";
     for (let id in cart) {
         message += "- " + cart[id].qty + " x " + cart[id].name + " (Rs." + (cart[id].price * cart[id].qty) + ")\n";
     }
-
-    message += "\n--------------------------";
-    message += "\nSubtotal: Rs." + orderTotal;
-    message += "\nDelivery Charge: Rs." + deliveryCharge;
-    message += "\n*TOTAL BILL: Rs." + finalTotal + "*";
-    message += "\n--------------------------";
-    message += "\nThank you for ordering!";
+    message += "\nSubtotal: Rs." + orderTotal + "\nDelivery Charge: Rs." + deliveryCharge + "\n*TOTAL BILL: Rs." + finalTotal + "*\n--------------------------";
 
     window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
-        
-        // --- TIMING CHECK LOGIC ---
+
 function checkStoreStatus() {
-    const now = new Date();
-    const hour = now.getHours(); // 0-23 format
-
-    // Open: 5 PM (17) se 1 AM (1) tak
-    // Iska matlab 17 se bada ho YA 1 se chhota
-    const isOpen = (hour >= 17 || hour < 1);
-
+    const hour = new Date().getHours();
+    const isOpen = (hour >= 17 || hour < 1); // 5 PM se 1 AM
     const banner = document.getElementById('storeStatusBanner');
     const statusText = document.getElementById('openCloseStatus');
 
     if (banner && statusText) {
         if (isOpen) {
-            banner.style.backgroundColor = "#e8f5e9"; // Green
-            banner.style.borderColor = "#2e7d32";
-            banner.style.color = "#2e7d32";
-            statusText.innerText = "● WE ARE OPEN NOW! 🍔";
+            banner.style.backgroundColor = "#e8f5e9";
+            statusText.innerText = "● WE ARE OPEN NOW!";
         } else {
-            banner.style.backgroundColor = "#ffebee"; // Red
-            banner.style.borderColor = "#c62828";
-            banner.style.color = "#c62828";
-            statusText.innerText = "● SORRY, WE ARE CLOSED! (Orders resume at 5 PM)";
+            banner.style.backgroundColor = "#ffebee";
+            statusText.innerText = "● SORRY, WE ARE CLOSED!";
         }
     }
     return isOpen;
 }
-        
-  // --- MENU KO WAPAS LAANE WALI LINE ---
-window.onload = function() {
-    if (typeof renderMenu === 'function') {
-        renderMenu();
-    }
-};
+
+window.onload = function() { renderMenu(); };
+    
 
 </script>
 </body>
