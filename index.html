@@ -488,6 +488,15 @@ function scrollToCat(catName) {
 
     <div id="checkoutModal" class="modal-overlay">
         <div class="modal-box">
+                    <div id="billReview" style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #d35400;">
+            <h4 style="margin-top: 0; color: #d35400; border-bottom: 1px solid #eee; padding-bottom: 10px;">Review Your Order</h4>
+            <div id="billItemsList" style="color: #333;">
+                </div>
+            <div id="billTotalDisplay" style="margin-top: 15px; font-weight: bold; font-size: 1.1em; border-top: 2px solid #eee; padding-top: 10px; color: #333;">
+                </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            
             <h3>Delivery Details</h3>
             <p style="font-size: 0.85em; color: #7f8c8d; margin-top: -5px; margin-bottom: 15px;">Enter details once, we'll save it for your next visit!</p>
             
@@ -710,7 +719,8 @@ function showCheckoutButton() {
             existingBtn = document.createElement('button');
             existingBtn.id = 'floating-checkout';
             existingBtn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:15px 30px; border-radius:30px; border:none; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:999; width:80%; font-size:16px;";
-            existingBtn.onclick = () => { document.getElementById('checkoutModal').style.display = 'block'; };
+            existingBtn.onclick = () => { renderBillSummary(); document.getElementById('checkoutModal').style.display = 'block'; };
+            
             document.body.appendChild(existingBtn);
         }
         existingBtn.innerText = "🛒 View Cart (" + totalItems + " Items)";
@@ -718,7 +728,11 @@ function showCheckoutButton() {
         existingBtn.remove();
     }
 }
-
+function openCheckout() {
+    renderBillSummary();
+    document.getElementById('checkoutModal').style.display = 'block';
+}
+        
 function closeModal(id) { 
     let modal = document.getElementById(id);
     if(modal) modal.style.display = 'none'; 
@@ -869,6 +883,53 @@ window.onload = function() { renderMenu(); };
         alert("Aapka phone location support nahi karta.");
     }
   }
+
+        // --- 🛒 BILL SUMMARY LOGIC ---
+function renderBillSummary() {
+    let listHtml = '';
+    let total = 0;
+
+    for (let id in cart) {
+        let item = cart[id];
+        let itemTotal = item.price * item.qty;
+        total += itemTotal;
+
+        listHtml += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.95em;">
+                <div style="flex: 1;">
+                    <span style="font-weight: 600;">${item.name}</span><br>
+                    <span style="color: #666;">Rs. ${item.price}</span>
+                </div>
+                <div style="display: flex; align-items: center; background: #fcebeb; border: 1px solid #d35400; border-radius: 6px; overflow: hidden; margin: 0 10px;">
+                    <button type="button" onclick="updateQtyInBill('${id}', -1)" style="background: transparent; border: none; padding: 4px 10px; color: #d35400; font-weight: bold; cursor: pointer; font-size: 1.1em;">-</button>
+                    <span style="padding: 0 8px; font-weight: bold; color: #d35400;">${item.qty}</span>
+                    <button type="button" onclick="updateQtyInBill('${id}', 1)" style="background: transparent; border: none; padding: 4px 10px; color: #d35400; font-weight: bold; cursor: pointer; font-size: 1.1em;">+</button>
+                </div>
+                <div style="font-weight: bold; width: 65px; text-align: right;">Rs. ${itemTotal}</div>
+            </div>`;
+    }
+
+    document.getElementById('billItemsList').innerHTML = listHtml || '<p style="text-align:center; color: red;">Cart is empty!</p>';
+    document.getElementById('billTotalDisplay').innerHTML = `
+        <div style="display: flex; justify-content: space-between;">
+            <span>Subtotal:</span>
+            <span>Rs. ${total}</span>
+        </div>`;
+}
+
+function updateQtyInBill(id, change) {
+    updateQty(id, change); // Tera main cart update karega
+    renderBillSummary();   // Bill wale dhabbe ko refresh karega
+    
+    // Agar plus-minus karke cart khali ho gaya, toh pop-up band kar do
+    let cartIsEmpty = true;
+    for (let key in cart) {
+        if (cart.hasOwnProperty(key)) { cartIsEmpty = false; break; }
+    }
+    if (cartIsEmpty) {
+        closeModal('checkoutModal');
+    }
+}
         
 </script>
 </body>
