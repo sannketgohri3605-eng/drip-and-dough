@@ -720,32 +720,41 @@ function scrollToCat(catName) {
         }
  let globalLocationLink = ""; 
 
+// --- FUNCTION 1: Location nikalne ke liye ---
 function getLocation() {
     const status = document.getElementById('locationStatus');
+    status.style.display = "block";
+    status.innerText = "⏳ Finding your location...";
+
+    // Test Alert: Taaki pata chale button kaam kar raha hai
+    alert("Bhai, location dhoondhna shuru! Ab pop-up aaye toh 'Allow' kar dena.");
+
     if (!navigator.geolocation) {
-        alert("Bhai, browser location support nahi kar raha!");
-    } else {
-        status.style.display = "block";
-        status.innerText = "⏳ Finding your location...";
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            globalLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
-            status.innerText = "✅ Location Captured! Proceed to Order.";
-        }, () => {
-            alert("Bhai, location permission allow kar do!");
-            status.innerText = "❌ Location Failed";
-        });
+        alert("Bhai, tere phone mein location support nahi hai!");
+        return;
     }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        // Google Maps Link Format
+        globalLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
+        status.innerText = "✅ Location Captured!";
+        alert("Location mil gayi! Ab order bhej sakte ho.");
+    }, (err) => {
+        alert("Bhai, tune permission BLOCK ki hai. Lock (🔒) icon pe jaake Allow karo!");
+        status.innerText = "❌ Location Failed";
+    }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
+// --- FUNCTION 2: Order bhejne ke liye ---
 function confirmAndSendOrder() {
     let name = document.getElementById('custName').value.trim();
     let address = document.getElementById('custAddress').value.trim();
     let payMode = document.getElementById('paymentMethod').value;
 
     if (name === "" || address === "") {
-        alert("Bhai, Naam aur Pata toh bhar do! 🛵");
+        alert("Bhai, Details toh bhar do! 🛵");
         return;
     }
 
@@ -754,35 +763,29 @@ function confirmAndSendOrder() {
     message += "Name: " + name + "\n";
     message += "Address: " + address + "\n";
     
-    // Agar location capture hui hai toh link add hoga
     if(globalLocationLink !== "") {
         message += "Maps: " + globalLocationLink + "\n";
     }
     
     message += "Payment: " + payMode + "\n";
     message += "--------------------------\n\n";
-    message += "*ITEMS ORDERED:*\n";
+    message += "*ITEMS:*\n";
 
-    let totalAmount = 0;
+    let total = 0;
     for (let id in cart) {
-        let item = cart[id];
-        message += "- " + item.qty + " x " + item.name + " (Rs. " + (item.price * item.qty) + ")\n";
-        totalAmount += (item.price * item.qty);
+        message += "- " + cart[id].qty + " x " + cart[id].name + " (Rs." + (cart[id].price * cart[id].qty) + ")\n";
+        total += (cart[id].price * cart[id].qty);
     }
 
-    message += "\n--------------------------\n";
-    message += "*TOTAL AMOUNT: Rs. " + totalAmount + "*\n";
+    message += "\n*TOTAL: Rs." + total + "*\n";
     message += "--------------------------\n";
-    message += "Thank you for ordering!";
+    message += "Thank you!";
 
     window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
-    closeModal('checkoutModal');
 }
 
-// Menu loading fix
+// --- YE LINE ZAROORI HAI ---
 window.onload = function() { renderMenu(); };
-        
-        
         
         
     </script>
