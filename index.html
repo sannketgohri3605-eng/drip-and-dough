@@ -708,45 +708,53 @@ function scrollToCat(catName) {
         function confirmAndSendOrder() {
     let name = document.getElementById('custName').value.trim();
     let address = document.getElementById('custAddress').value.trim();
+    let payMode = document.getElementById('paymentMethod').value;
 
     if (name === "" || address === "") {
-        alert("Please enter both Name and Delivery Address! 🛵");
+        alert("Bhai, Naam aur Pata toh bhar do! 🛵");
         return;
     }
 
-    // Details save karna taaki agli baar mehnat na ho
     localStorage.setItem('dd_customer_name', name);
     localStorage.setItem('dd_customer_address', address);
 
-    const phoneNumber = "918076889662";
-    
-    // --- PRO BILL FORMATTING ---
     let message = "🛍️ *DRIP & DOUGH - NEW ORDER!*\n";
     message += "--------------------------\n";
     message += "👤 *Customer:* " + name + "\n";
     message += "📍 *Address:* " + address + "\n";
+    message += "💳 *Payment:* " + payMode + "\n";
     message += "--------------------------\n\n";
     message += "📦 *ITEMS ORDERED:*\n";
 
     let totalAmount = 0;
     for (let id in cart) {
         let item = cart[id];
-        message += "🔹 " + item.qty + " x " + item.name + " - ₹" + (item.price * item.qty) + "\n";
+        message += "🔹 " + item.qty + " x " + item.name + " (₹" + (item.price * item.qty) + ")\n";
         totalAmount += (item.price * item.qty);
     }
 
     message += "\n--------------------------\n";
     message += "💰 *TOTAL AMOUNT: ₹" + totalAmount + "*\n";
     message += "--------------------------\n";
-    message += "🛵 *Status:* Cash on Delivery\n";
+    
+    if(payMode === "UPI / Online") {
+        message += "⚠️ _Please send payment screenshot here!_\n";
+    }
     message += "✨ _Thank you for ordering!_";
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/918076889662?text=${encodeURIComponent(message)}`;
     
+    if(payMode === "UPI / Online") {
+        alert("Bhai, order ke baad WhatsApp par hum apna QR bhej denge! 👍");
+    }
+
     window.open(whatsappUrl, '_blank');
     closeModal('checkoutModal');
-        }
+}
+
+// Ye line zaroori hai menu wapas laane ke liye
+window.onload = renderMenu;
+        
         
     </script>
 </body>
