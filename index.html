@@ -450,7 +450,7 @@ function scrollToCat(catName) {
 
         <div class="delivery-banner">
             🛵 Free Home Delivery up to 3km (on minimum order ₹500)<br>
-            <span style="font-size: 0.9em; font-weight: 600; color: #636e72;">(₹20 per km if more than 3km)</span>
+            <span style="font-size: 0.9em; font-weight: 600; color: #636e72;">(₹10 per km if more than 3km)</span>
         </div>
     </header>
 
@@ -481,6 +481,9 @@ function scrollToCat(catName) {
 <p id="locationStatus" style="font-size: 0.85em; color: #27ae60; margin-bottom: 10px; display: none; font-weight: 600; text-align: center;">✅ Location Captured!</p>
             
             <textarea id="custAddress" class="input-field" rows="3" placeholder="Complete Delivery Address & Landmark"></textarea>
+            <label style="display:block; margin-top:10px; font-weight:bold;">📍 Distance from Shop (in KM):</label>
+<input type="number" id="custDistance" placeholder="Maslan: 4" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px;">
+            
             <div style="margin-top: 15px; text-align: left;">
     <label style="font-weight: bold; color: #333; font-size: 0.9em;">💳 Select Payment:</label>
     <select id="paymentMethod" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd;">
@@ -828,20 +831,48 @@ function confirmAndSendOrder() {
     message += "--------------------------\n\n";
     message += "*ITEMS ORDERED:*\n";
 
-    let total = 0;
+        // --- 1. SUBTOTAL CALCULATE KARO ---
+    let orderTotal = 0;
     for (let id in cart) {
-        let item = cart[id];
-        message += "- " + item.qty + " x " + item.name + " (Rs." + (item.price * item.qty) + ")\n";
-        total += (item.price * item.qty);
+        orderTotal += (cart[id].price * cart[id].qty);
     }
 
-    message += "\n*TOTAL: Rs." + total + "*\n";
-    message += "--------------------------\n";
-    message += "Thank you for ordering!";
+    // --- 2. DELIVERY CHARGE LOGIC (10rs/km) ---
+    let distance = parseFloat(document.getElementById('custDistance').value) || 0;
+    let deliveryCharge = 0;
+
+    // Condition: Agar distance 3km se zyada hai YA order 500 se kam hai
+    if (distance > 3 || orderTotal < 500) {
+        deliveryCharge = distance * 10; 
+    }
+
+    let finalTotal = orderTotal + deliveryCharge;
+
+    // --- 3. WHATSAPP MESSAGE FORMATTING ---
+    let message = "*DRIP & DOUGH - NEW ORDER*\n--------------------------\n";
+    message += "Customer: " + name + "\nAddress: " + address + "\nDistance: " + distance + " km\n";
+    message += "Payment: " + payMode + "\n";
+    message += "⏳ Delivery: 30-45 Mins\n";
+
+    if(payMode === "UPI / Online") { message += "⚠️ *PLEASE SEND PAYMENT SCREENSHOT!* \n"; }
+    if(typeof globalLocationLink !== 'undefined' && globalLocationLink !== "") { message += "Maps: " + globalLocationLink + "\n"; }
+
+    message += "--------------------------\n*ITEMS:*\n";
+    for (let id in cart) {
+        message += "- " + cart[id].qty + " x " + cart[id].name + " (Rs." + (cart[id].price * cart[id].qty) + ")\n";
+    }
+
+    message += "\n--------------------------";
+    message += "\nSubtotal: Rs." + orderTotal;
+    message += "\nDelivery Charge: Rs." + deliveryCharge;
+    message += "\n*TOTAL BILL: Rs." + finalTotal + "*";
+    message += "\n--------------------------";
+    message += "\nThank you for ordering!";
 
     window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
+        
         // --- TIMING CHECK LOGIC ---
 function checkStoreStatus() {
     const now = new Date();
