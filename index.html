@@ -658,7 +658,56 @@ function scrollToCat(catName) {
         container.appendChild(grid);
     }
 }
+// --- MISSING ADD TO CART LOGIC ---
+function updateQty(id, change) {
+    let item = null;
+    for (const category in menuData) {
+        let found = menuData[category].find(i => i.id === id);
+        if (found) { item = found; break; }
+    }
+    
+    if (!item) return;
 
+    if (!cart[id]) {
+        cart[id] = { ...item, qty: 0 };
+    }
+    cart[id].qty += change;
+
+    if (cart[id].qty <= 0) {
+        delete cart[id];
+    }
+
+    renderMenu();
+    showCheckoutButton();
+}
+
+function showCheckoutButton() {
+    let totalItems = 0;
+    for (let id in cart) { totalItems += cart[id].qty; }
+
+    let existingBtn = document.getElementById('floating-checkout');
+    
+    if (totalItems > 0) {
+        if (!existingBtn) {
+            existingBtn = document.createElement('button');
+            existingBtn.id = 'floating-checkout';
+            existingBtn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:15px 30px; border-radius:30px; border:none; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:999; width:80%; font-size:16px;";
+            existingBtn.onclick = () => { document.getElementById('checkoutModal').style.display = 'block'; };
+            document.body.appendChild(existingBtn);
+        }
+        existingBtn.innerText = "🛒 View Cart (" + totalItems + " Items)";
+    } else if (existingBtn) {
+        existingBtn.remove();
+    }
+}
+
+function closeModal(id) { 
+    let modal = document.getElementById(id);
+    if(modal) modal.style.display = 'none'; 
+}
+// ---------------------------------
+        
+        
 function confirmAndSendOrder() {
     const name = document.getElementById('custName').value.trim();
     const address = document.getElementById('custAddress').value.trim();
