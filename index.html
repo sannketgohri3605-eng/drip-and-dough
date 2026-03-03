@@ -764,6 +764,25 @@ function getLocation() {
         { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
     );
 }
+// --- 1. UPI LOGIC (Line 767 ke paas chipkao) ---
+function updateUPILink() {
+    let total = 0;
+    for (let id in cart) { total += (cart[id].price * cart[id].qty); }
+    const myUpiId = "8076889662@pthdfc"; 
+    const bizName = "Drip and Dough";
+    const deepLink = `upi://pay?pa=${myUpiId}&pn=${encodeURIComponent(bizName)}&am=${total}&cu=INR&tn=Order_at_DripAndDough`;
+    document.getElementById('upiDeepLink').setAttribute('href', deepLink);
+}
+
+document.getElementById('paymentMethod').addEventListener('change', function() {
+    const upiBox = document.getElementById('upiPaymentBox');
+    if (this.value === "UPI / Online") {
+        upiBox.style.display = "block";
+        updateUPILink();
+    } else {
+        upiBox.style.display = "none";
+    }
+});
 
 // --- 2. ORDER FUNCTION (WhatsApp Fix) ---
 function confirmAndSendOrder() {
@@ -808,8 +827,14 @@ function confirmAndSendOrder() {
     window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
-        
-        
-    </script>
+  // --- MENU KO WAPAS LAANE WALI LINE ---
+window.onload = function() {
+    if (typeof renderMenu === 'function') {
+        renderMenu();
+    }
+};
+
+</script>
 </body>
 </html>
+
