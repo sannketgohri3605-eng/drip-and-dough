@@ -482,6 +482,14 @@ function scrollToCat(catName) {
         <option value="Cash on Delivery">💵 Cash on Delivery (COD)</option>
         <option value="UPI / Online">📱 UPI / Online Payment</option>
     </select>
+                <div id="upiPaymentBox" style="display: none; margin-top: 15px; padding: 10px; background: #f0f9ff; border: 1px solid #008291; border-radius: 10px; text-align: center;">
+    <p style="font-weight: bold; color: #008291; margin-bottom: 8px; font-size: 0.9em;">📲 Fast Payment via UPI</p>
+    <a id="upiDeepLink" href="#" style="display: block; background: #008291; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        🚀 Click to Pay (GPay/Paytm/PhonePe)
+    </a>
+    <p style="font-size: 0.7em; color: #666; margin-top: 8px;">Pay karne ke baad hi 'Send Order' dabayein.</p>
+                </div>
+                
             </div>
             
             
@@ -772,31 +780,34 @@ function confirmAndSendOrder() {
     message += "--------------------------\n";
     message += "Customer: " + name + "\n";
     message += "Address: " + address + "\n";
-    
-    if(globalLocationLink !== "") {
-        message += "Maps: " + globalLocationLink + "\n";
+    message += "Payment: " + payMode + "\n";
+
+    // --- YE RAHI SCREENSHOT WALI WARNING ---
+    if(payMode === "UPI / Online") {
+        message += "⚠️ *PLEASE SEND PAYMENT SCREENSHOT HERE!*\n";
     }
     
-    message += "Payment: " + payMode + "\n";
+    if(typeof globalLocationLink !== 'undefined' && globalLocationLink !== "") {
+        message += "Maps Link: " + globalLocationLink + "\n";
+    }
+    
     message += "--------------------------\n\n";
     message += "*ITEMS ORDERED:*\n";
 
     let total = 0;
     for (let id in cart) {
-        message += "- " + cart[id].qty + " x " + cart[id].name + " (Rs." + (cart[id].price * cart[id].qty) + ")\n";
-        total += (cart[id].price * cart[id].qty);
+        let item = cart[id];
+        message += "- " + item.qty + " x " + item.name + " (Rs." + (item.price * item.qty) + ")\n";
+        total += (item.price * item.qty);
     }
 
     message += "\n*TOTAL: Rs." + total + "*\n";
     message += "--------------------------\n";
     message += "Thank you for ordering!";
 
-    window.open("https://wa.me/918076889662?text=" + encodeURIComponent(message), '_blank');
+    window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
-
-// --- MENU WAPAS LAANE KE LIYE ---
-window.onload = function() { renderMenu(); };
         
         
     </script>
