@@ -195,14 +195,20 @@
             justify-content: center;
         }
         .modal-box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    
+    /* 👇 Nayi lines jo box ko ekdum center me layengi 👇 */
+    margin: 10vh auto; 
+    max-height: 80vh;
+    overflow-y: auto;
         }
+        
         .modal-box h3 { margin-top: 0; font-weight: 800; color: var(--text-main); }
         
         .input-field {
@@ -818,7 +824,30 @@ function checkStoreStatus() {
 }
 
 window.onload = function() { renderMenu(); };
-  
+        
+  function getLocation() {
+    const addressBox = document.getElementById('custAddress');
+    
+    if (navigator.geolocation) {
+        addressBox.value = "📍 Live location nikal raha hoon... thoda ruko...";
+        
+        navigator.geolocation.getCurrentPosition(function(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            let mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+            
+            // Box mein Google Maps ka link aur message dal dega
+            addressBox.value = `📍 Live Location: ${mapLink}\n(Apna Flat/House no. ya Landmark yahan neeche likh dein):\n`;
+            
+        }, function(error) {
+            alert("Location fail ho gayi bhai! Ya toh permission denied hai ya network issue. Kripya address khud type kar dein.");
+            addressBox.value = "";
+        });
+    } else {
+        alert("Aapka phone location support nahi karta.");
+    }
+  }
+        
 </script>
 </body>
 </html>
