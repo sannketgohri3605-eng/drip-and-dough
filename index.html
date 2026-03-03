@@ -470,6 +470,11 @@ function scrollToCat(catName) {
             <p style="font-size: 0.85em; color: #7f8c8d; margin-top: -5px; margin-bottom: 15px;">Enter details once, we'll save it for your next visit!</p>
             
             <input type="text" id="custName" class="input-field" placeholder="Your Full Name">
+            <button type="button" onclick="getLocation()" style="width: 100%; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    📍 Share My Live Location
+</button>
+<p id="locationStatus" style="font-size: 0.85em; color: #27ae60; margin-bottom: 10px; display: none; font-weight: 600; text-align: center;">✅ Location Captured!</p>
+            
             <textarea id="custAddress" class="input-field" rows="3" placeholder="Complete Delivery Address & Landmark"></textarea>
             <div style="margin-top: 15px; text-align: left;">
     <label style="font-weight: bold; color: #333; font-size: 0.9em;">💳 Select Payment:</label>
@@ -713,8 +718,28 @@ function scrollToCat(catName) {
                 document.getElementById('custAddress').value = localStorage.getItem('dd_customer_address');
             }
         }
- 
-        function confirmAndSendOrder() {
+ let globalLocationLink = ""; 
+
+function getLocation() {
+    const status = document.getElementById('locationStatus');
+    if (!navigator.geolocation) {
+        alert("Bhai, browser location support nahi kar raha!");
+    } else {
+        status.style.display = "block";
+        status.innerText = "⏳ Finding your location...";
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            globalLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
+            status.innerText = "✅ Location Captured! Proceed to Order.";
+        }, () => {
+            alert("Bhai, location permission allow kar do!");
+            status.innerText = "❌ Location Failed";
+        });
+    }
+}
+
+function confirmAndSendOrder() {
     let name = document.getElementById('custName').value.trim();
     let address = document.getElementById('custAddress').value.trim();
     let payMode = document.getElementById('paymentMethod').value;
@@ -724,14 +749,16 @@ function scrollToCat(catName) {
         return;
     }
 
-    localStorage.setItem('dd_customer_name', name);
-    localStorage.setItem('dd_customer_address', address);
-
-    // Bill format with Safe Standard Emojis
     let message = "*DRIP & DOUGH - NEW ORDER*\n";
     message += "--------------------------\n";
     message += "Name: " + name + "\n";
     message += "Address: " + address + "\n";
+    
+    // Agar location capture hui hai toh link add hoga
+    if(globalLocationLink !== "") {
+        message += "Maps: " + globalLocationLink + "\n";
+    }
+    
     message += "Payment: " + payMode + "\n";
     message += "--------------------------\n\n";
     message += "*ITEMS ORDERED:*\n";
@@ -746,21 +773,15 @@ function scrollToCat(catName) {
     message += "\n--------------------------\n";
     message += "*TOTAL AMOUNT: Rs. " + totalAmount + "*\n";
     message += "--------------------------\n";
-    
-    if(payMode === "UPI / Online") {
-        message += "Note: Please send payment screenshot here!\n";
-    }
     message += "Thank you for ordering!";
 
-    const whatsappUrl = `https://wa.me/918076889662?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
 
-// --- YE LINE MENU WAPAS LAYEGI ---
-window.onload = function() {
-    renderMenu();
-};
+// Menu loading fix
+window.onload = function() { renderMenu(); };
+        
         
         
         
