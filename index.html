@@ -331,72 +331,109 @@ header p.tagline {
 }
 /* --- DARK CINEMATIC HEADER END --- */
 
-     /* --- CATEGORY SLIDER CSS START --- */
-html { scroll-behavior: smooth !important; }
-.category-nav {
+     /* --- FLOATING MENU CSS START --- */
+.floating-menu-btn {
+    position: fixed !important;
+    bottom: 25px !important;
+    left: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+    background: linear-gradient(135deg, #1f1c18, #3e3b37) !important;
+    color: white !important;
+    border-radius: 50% !important;
     display: flex !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    padding: 12px 15px !important;
-    background: #ffffff !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 1000 !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
-    margin-bottom: 20px !important;
-}
-.category-nav::-webkit-scrollbar { display: none !important; }
-.category-btn {
-    background: #f8f9fa !important;
-    border: 1px solid #e0e0e0 !important;
-    color: #333 !important;
-    padding: 8px 18px !important;
-    border-radius: 25px !important;
-    margin-right: 12px !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 26px !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4) !important;
+    z-index: 2000 !important;
     cursor: pointer !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
     transition: 0.2s !important;
 }
-.category-btn:active {
-    background: #ff6b35 !important;
-    color: white !important;
-    border-color: #ff6b35 !important;
-    transform: scale(0.95) !important;
+.floating-menu-btn:active { transform: scale(0.9) !important; }
+
+.floating-menu-container {
+    position: fixed !important;
+    bottom: 95px !important;
+    left: 20px !important;
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    padding: 12px !important;
+    display: none; 
+    flex-direction: column !important;
+    gap: 8px !important;
+    z-index: 2000 !important;
+    max-height: 55vh !important;
+    overflow-y: auto !important;
+    width: 220px !important;
+    border: 1px solid #eee !important;
 }
-/* --- CATEGORY SLIDER CSS END --- */
+.floating-menu-container.show {
+    display: flex !important;
+    animation: popUp 0.3s ease !important;
+}
+@keyframes popUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.floating-menu-item {
+    padding: 12px 15px !important;
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    font-size: 15px !important;
+    text-align: left !important;
+}
+.floating-menu-item:active { 
+    background: #ff6b35 !important; 
+    color: white !important; 
+}
+/* --- FLOATING MENU CSS END --- */
+        
         
     </style>
 </head>
 <body>
 
     <header>
-        <div class="category-nav">
-    <div class="category-btn" onclick="scrollToCat('PIZZA')">🍕 Pizza</div>
-    <div class="category-btn" onclick="scrollToCat('BURGER')">🍔 Burgers</div>
-    <div class="category-btn" onclick="scrollToCat('SANDWICH')">🥪 Sandwiches</div>
-    <div class="category-btn" onclick="scrollToCat('PASTA')">🍝 Pasta</div>
-    <div class="category-btn" onclick="scrollToCat('MAGGIE')">🍜 Maggie</div>
-    <div class="category-btn" onclick="scrollToCat('WRAP')">🌯 Wraps</div>
-    <div class="category-btn" onclick="scrollToCat('FRIES')">🍟 Fries</div>
-    <div class="category-btn" onclick="scrollToCat('BEVERAGE')">☕ Beverages</div>
-    <div class="category-btn" onclick="scrollToCat('SHAKE')">🥤 Shakes</div>
-    <div class="category-btn" onclick="scrollToCat('COMBO')">🔥 Combos</div>
+        <div class="floating-menu-btn" onclick="toggleMenu()">
+    ☰
+</div>
+
+<div class="floating-menu-container" id="floatMenu">
+    <div class="floating-menu-item" onclick="scrollToCat('PIZZA')">🍕 Pizza</div>
+    <div class="floating-menu-item" onclick="scrollToCat('BURGER')">🍔 Burgers</div>
+    <div class="floating-menu-item" onclick="scrollToCat('SANDWICH')">🥪 Sandwiches</div>
+    <div class="floating-menu-item" onclick="scrollToCat('PASTA')">🍝 Pasta</div>
+    <div class="floating-menu-item" onclick="scrollToCat('MAGGIE')">🍜 Maggie</div>
+    <div class="floating-menu-item" onclick="scrollToCat('WRAP')">🌯 Wraps</div>
+    <div class="floating-menu-item" onclick="scrollToCat('FRIES')">🍟 Fries</div>
+    <div class="floating-menu-item" onclick="scrollToCat('BEVERAGE')">☕ Beverages</div>
+    <div class="floating-menu-item" onclick="scrollToCat('SHAKE')">🥤 Shakes</div>
+    <div class="floating-menu-item" onclick="scrollToCat('COMBO')">🔥 Combos</div>
 </div>
 
 <script>
+function toggleMenu() {
+    document.getElementById('floatMenu').classList.toggle('show');
+}
+
 function scrollToCat(catName) {
     let headings = document.querySelectorAll('h1, h2, h3');
     for (let i = 0; i < headings.length; i++) {
         if (headings[i].innerText.toUpperCase().includes(catName)) {
-            let y = headings[i].getBoundingClientRect().top + window.scrollY - 70;
+            let y = headings[i].getBoundingClientRect().top + window.scrollY - 20;
             window.scrollTo({top: y, behavior: 'smooth'});
             break;
         }
     }
+    // Jump karne ke baad menu apne aap band ho jayega
+    document.getElementById('floatMenu').classList.remove('show');
 }
 </script>
+        
 
         <img src="logo.png" class="logo-img" alt="Drip & Dough Logo">
         
