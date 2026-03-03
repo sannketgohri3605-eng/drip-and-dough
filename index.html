@@ -439,6 +439,11 @@ function scrollToCat(catName) {
         
     
         <h1>DRIP & DOUGH</h1>
+        <div id="storeStatusBanner" style="text-align: center; padding: 12px; margin: 10px; border-radius: 10px; font-weight: bold; border: 2px solid;">
+    🕒 Timings: 5:00 PM - 1:00 AM <br>
+    <span id="openCloseStatus" style="font-size: 1.1em;">Checking status...</span>
+        </div>
+        
         <p class="tagline">CRAVINGS SATISFIED</p>
         
         <div class="welcome-banner">✨ Welcome! Add your favorites below & we'll deliver them hot and fresh! ✨</div>
@@ -593,6 +598,8 @@ function scrollToCat(catName) {
         function renderMenu() {
             const container = document.getElementById('menu-container');
             container.innerHTML = ''; 
+            const isOpen = checkStoreStatus(); // Pehle timing check karega
+            
 
             for (const category in menuData) {
                 const title = document.createElement('h2');
@@ -611,23 +618,31 @@ function scrollToCat(catName) {
                     let descHTML = item.desc ? `<p class="item-desc">${item.desc}</p>` : '';
                     let actionHTML = '';
 
-                    if (item.variants) {
-                        let varStr = item.variants.join(',');
-                        actionHTML = `<button class="add-btn" onclick="openOptions('${item.id}', '${item.name}', ${item.price}, '${priceText}', '${varStr}')">ADD +</button>`;
-                    } else {
-                        if (cart[item.id] && cart[item.id].qty > 0) {
-                            actionHTML = `
-                                <div class="qty-control">
-                                    <button class="qty-btn" onclick="updateQty('${item.id}', '${item.name}', ${item.price}, '${priceText}', -1)">-</button>
-                                    <span class="qty-val">${cart[item.id].qty}</span>
-                                    <button class="qty-btn" onclick="updateQty('${item.id}', '${item.name}', ${item.price}, '${priceText}', 1)">+</button>
-                                </div>
-                            `;
-                        } else {
-                            actionHTML = `<button class="add-btn" onclick="updateQty('${item.id}', '${item.name}', ${item.price}, '${priceText}', 1)">ADD</button>`;
-                        }
-                    }
-
+                    // --- BUTTON LOGIC START ---
+if (isOpen) {
+    // Agar dukan khuli hai toh purana logic chale
+    if (item.variants) {
+        let varStr = item.variants.join(',');
+        actionHTML = `<button class="add-btn" onclick="openOptions('${item.id}', '${item.name}', '${varStr}')">Add +</button>`;
+    } else {
+        if (cart[item.id] && cart[item.id].qty > 0) {
+            actionHTML = `
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                    <span class="qty-val">${cart[item.id].qty}</span>
+                    <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                </div>
+            `;
+        } else {
+            actionHTML = `<button class="add-btn" onclick="updateQty('${item.id}', 1)">Add +</button>`;
+        }
+    }
+} else {
+    // Agar dukan band hai toh "Closed" button dikhega
+    actionHTML = `<button disabled style="background: #ccc; color: #666; cursor: not-allowed; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold;">Closed</button>`;
+}
+// --- BUTTON LOGIC END ---
+                    
                     div.innerHTML = `
                         <img src="${item.imageUrl}" class="item-img" alt="${item.name}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${item.name.charAt(0)}&background=dfe6e9&color=2d3436&size=150';">
                         <div class="item-content">
@@ -827,6 +842,34 @@ function confirmAndSendOrder() {
     window.open(`https://wa.me/918076889662?text=${encodeURIComponent(message)}`, '_blank');
     closeModal('checkoutModal');
 }
+        // --- TIMING CHECK LOGIC ---
+function checkStoreStatus() {
+    const now = new Date();
+    const hour = now.getHours(); // 0-23 format
+
+    // Open: 5 PM (17) se 1 AM (1) tak
+    // Iska matlab 17 se bada ho YA 1 se chhota
+    const isOpen = (hour >= 17 || hour < 1);
+
+    const banner = document.getElementById('storeStatusBanner');
+    const statusText = document.getElementById('openCloseStatus');
+
+    if (banner && statusText) {
+        if (isOpen) {
+            banner.style.backgroundColor = "#e8f5e9"; // Green
+            banner.style.borderColor = "#2e7d32";
+            banner.style.color = "#2e7d32";
+            statusText.innerText = "● WE ARE OPEN NOW! 🍔";
+        } else {
+            banner.style.backgroundColor = "#ffebee"; // Red
+            banner.style.borderColor = "#c62828";
+            banner.style.color = "#c62828";
+            statusText.innerText = "● SORRY, WE ARE CLOSED! (Orders resume at 5 PM)";
+        }
+    }
+    return isOpen;
+}
+        
   // --- MENU KO WAPAS LAANE WALI LINE ---
 window.onload = function() {
     if (typeof renderMenu === 'function') {
