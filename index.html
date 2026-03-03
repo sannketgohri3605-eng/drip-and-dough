@@ -727,37 +727,41 @@ function scrollToCat(catName) {
     localStorage.setItem('dd_customer_name', name);
     localStorage.setItem('dd_customer_address', address);
 
-    // --- PRO BILL WITH STANDARD EMOJIS ---
-    let message = "🛍️ *DRIP & DOUGH - NEW ORDER!*\n";
+    // Bill format with Safe Standard Emojis
+    let message = "*DRIP & DOUGH - NEW ORDER*\n";
     message += "--------------------------\n";
-    message += "👤 *Name:* " + name + "\n";
-    message += "📍 *Address:* " + address + "\n";
-    message += "💳 *Payment:* " + payMode + "\n";
+    message += "Name: " + name + "\n";
+    message += "Address: " + address + "\n";
+    message += "Payment: " + payMode + "\n";
     message += "--------------------------\n\n";
-    message += "📦 *ITEMS ORDERED:*\n";
+    message += "*ITEMS ORDERED:*\n";
 
     let totalAmount = 0;
     for (let id in cart) {
         let item = cart[id];
-        message += "🔹 " + item.qty + " x " + item.name + " (₹" + (item.price * item.qty) + ")\n";
+        message += "- " + item.qty + " x " + item.name + " (Rs. " + (item.price * item.qty) + ")\n";
         totalAmount += (item.price * item.qty);
     }
 
     message += "\n--------------------------\n";
-    message += "💰 *TOTAL AMOUNT: ₹" + totalAmount + "*\n";
+    message += "*TOTAL AMOUNT: Rs. " + totalAmount + "*\n";
     message += "--------------------------\n";
     
     if(payMode === "UPI / Online") {
-        message += "⚠️ _Please send payment screenshot here!_\n";
+        message += "Note: Please send payment screenshot here!\n";
     }
-    message += "✨ _Thank you for ordering!_";
+    message += "Thank you for ordering!";
 
-    // Tera number aur encoded message
     const whatsappUrl = `https://wa.me/918076889662?text=${encodeURIComponent(message)}`;
-    
     window.open(whatsappUrl, '_blank');
     closeModal('checkoutModal');
-        }
+}
+
+// --- YE LINE MENU WAPAS LAYEGI ---
+window.onload = function() {
+    renderMenu();
+};
+        
         
         
     </script>
