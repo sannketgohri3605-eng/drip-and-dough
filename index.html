@@ -706,46 +706,48 @@ function scrollToCat(catName) {
         }
 
         function confirmAndSendOrder() {
-            let name = document.getElementById('custName').value.trim();
-            let address = document.getElementById('custAddress').value.trim();
+    let name = document.getElementById('custName').value.trim();
+    let address = document.getElementById('custAddress').value.trim();
 
-            if(name === "" || address === "") {
-                alert("Please enter both Name and Delivery Address!");
-                return;
-            }
+    if (name === "" || address === "") {
+        alert("Please enter both Name and Delivery Address! 🛵");
+        return;
+    }
 
-            localStorage.setItem('dd_customer_name', name);
-            localStorage.setItem('dd_customer_address', address);
+    // Details save karna taaki agli baar mehnat na ho
+    localStorage.setItem('dd_customer_name', name);
+    localStorage.setItem('dd_customer_address', address);
 
-            const phoneNumber = "918076889662"; 
-            let message = "Hello *Drip & Dough*! 🍕☕\nI have placed an order from your website:\n\n";
-            
-            message += `*Customer Details:*\n`;
-            message += `Name: ${name}\n`;
-            message += `Address: ${address}\n\n`;
-            
-            message += `*Order Summary:*\n`;
+    const phoneNumber = "918076889662";
+    
+    // --- PRO BILL FORMATTING ---
+    let message = "🛍️ *DRIP & DOUGH - NEW ORDER!*\n";
+    message += "--------------------------\n";
+    message += "👤 *Customer:* " + name + "\n";
+    message += "📍 *Address:* " + address + "\n";
+    message += "--------------------------\n\n";
+    message += "📦 *ITEMS ORDERED:*\n";
 
-            let totalAmount = 0;
+    let totalAmount = 0;
+    for (let id in cart) {
+        let item = cart[id];
+        message += "🔹 " + item.qty + " x " + item.name + " - ₹" + (item.price * item.qty) + "\n";
+        totalAmount += (item.price * item.qty);
+    }
 
-            for (let id in cart) {
-                let item = cart[id];
-                let itemTotal = item.price * item.qty;
-                totalAmount += itemTotal;
-                
-                message += `▪ ${item.qty}x ${item.name} - ₹${itemTotal}\n`;
-            }
+    message += "\n--------------------------\n";
+    message += "💰 *TOTAL AMOUNT: ₹" + totalAmount + "*\n";
+    message += "--------------------------\n";
+    message += "🛵 *Status:* Cash on Delivery\n";
+    message += "✨ _Thank you for ordering!_";
 
-            message += `\n*Total Amount: ₹${totalAmount}*`;
-            message += `\n\nPlease confirm my order!`;
-
-            const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappURL, "_blank");
-            
-            closeModal('checkoutModal');
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    closeModal('checkoutModal');
         }
-
-        window.onload = renderMenu;
+        
     </script>
 </body>
 </html>
